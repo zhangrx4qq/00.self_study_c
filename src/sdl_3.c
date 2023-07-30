@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <SDL.h>
+#include <SDL_image.h>
 
-//示例0:创建空窗口,消息循环
+//示例3:使用图片
 
 typedef enum
 {
@@ -10,12 +11,24 @@ typedef enum
 
 #define WindowWidth   640   //SDL窗口的宽度
 #define WindowHeigth  480   //SDL窗口的高度
+#define FrameRate 30        //帧率
+
+int x = 0;
+int y = 0;
+
+//绘制窗体
+void draw(SDL_Surface *screen,SDL_Surface *img,SDL_Window *window){
+    SDL_Rect src = {0,0,img->w,img->h};
+    SDL_BlitSurface(img,&src,screen,&src);
+    SDL_UpdateWindowSurface(window);
+}
 
 //循环处理消息
-void event_loop(){
+void event_loop(SDL_Surface *screen,SDL_Surface *img,SDL_Window *window){
     BOOL quit = FALSE;                                      
     SDL_Event e;
     while (!quit) {
+        draw(screen,img,window);
         //获取到了消息事件
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
@@ -42,10 +55,18 @@ int main(){
         SDL_Log("SDL_CreateWindow错误:%s",SDL_GetError());
         return -1;
     }
-    
-    //循环处理消息
-    event_loop();
 
+    //SDL_Surface:使用sdl_image装载图片，创建SDL Surface
+    //SDL_Surface *img = IMG_Load("../resources/gameover.bmp");
+    //SDL_Surface:使用sdl直接装载BMP图片，创建SDL Surface
+    SDL_Surface *img = SDL_LoadBMP("../resources/gameover.bmp");
+
+    SDL_Surface *m_screen = SDL_GetWindowSurface(m_window);
+
+    event_loop(m_screen,img,m_window);
+
+    //SDL_Surface:释放使用完毕的SDL Surface
+    SDL_FreeSurface(img);
     //SDL_Window:销毁创建的SDL窗口、释放占用的资源
     SDL_DestroyWindow(m_window); 
     //SDL:退出、释放资源

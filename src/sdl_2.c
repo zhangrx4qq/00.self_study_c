@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <SDL.h>
 
-//示例0:创建空窗口,消息循环
+//示例2:绘制动画、控制帧频
 
 typedef enum
 {
@@ -10,17 +10,47 @@ typedef enum
 
 #define WindowWidth   640   //SDL窗口的宽度
 #define WindowHeigth  480   //SDL窗口的高度
+#define FrameRate 30        //帧率
 
+int x = 0;
+int y = 0;
+
+//绘制窗体
+void draw(SDL_Surface *screen,SDL_Window *window){
+    SDL_Rect whiteRect = {0,0,WindowWidth,WindowHeigth};
+    SDL_FillRect(screen,&whiteRect,0xfffffff);//白色
+    SDL_Rect redRect = {x,y,100,100};
+    SDL_FillRect(screen,&redRect,0xffff0000);//红色
+    SDL_UpdateWindowSurface(window);
+    x++;
+    if(x==WindowWidth){
+        x = 0;
+        y=y+100;
+        if(y>=WindowHeigth){
+            x=0;
+            y=0;
+        }
+    }
+}
 //循环处理消息
-void event_loop(){
+void event_loop(SDL_Surface *screen,SDL_Window *window){
     BOOL quit = FALSE;                                      
     SDL_Event e;
     while (!quit) {
+        long t_begin = SDL_GetTicks();
+        draw(screen,window);
+
         //获取到了消息事件
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = TRUE;
             }
+        }
+
+        long t_current = SDL_GetTicks();
+        long delay = 1000/FrameRate -(t_current-t_begin);
+        if(delay > 0){
+            SDL_Delay(delay);
         }
     }
 }
@@ -42,9 +72,9 @@ int main(){
         SDL_Log("SDL_CreateWindow错误:%s",SDL_GetError());
         return -1;
     }
-    
-    //循环处理消息
-    event_loop();
+
+    SDL_Surface *m_screen = SDL_GetWindowSurface(m_window);
+    event_loop(m_screen,m_window);
 
     //SDL_Window:销毁创建的SDL窗口、释放占用的资源
     SDL_DestroyWindow(m_window); 
